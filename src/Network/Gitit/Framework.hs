@@ -35,6 +35,7 @@ module Network.Gitit.Framework (
                                -- * Functions to get info from the request
                                , getPath
                                , getPage
+                               , getPageStr                               
                                , getReferer
                                , getWikiBase
                                , uriPath
@@ -45,6 +46,7 @@ module Network.Gitit.Framework (
                                , isDiscussPageFile
                                , isNotDiscussPageFile
                                , isSourceCode
+                               , isOrgFile
                                -- * Combinators that change the request locally
                                , withMessages
                                -- * Miscellaneous
@@ -74,6 +76,13 @@ import Network.URL (decString, encString)
 import Network.URI (isUnescapedInURI)
 import Data.ByteString.Base64 (decodeLenient)
 import Network.HTTP (urlEncodeVars)
+
+import Control.Monad.Trans (liftIO)
+import System.Log.Logger (logM, Priority(..))
+
+
+import System.FilePath
+
 
 -- | Require a logged in user if the authentication level demands it.
 -- Run the handler if a user is logged in, otherwise redirect
@@ -184,6 +193,11 @@ unlessNoDelete responder fallback = withData $ \(params :: Params) -> do
 getPath :: ServerMonad m => m String
 getPath = liftM (intercalate "/" . rqPaths) askRq
 
+getPageStr :: ServerMonad m => m String
+getPageStr = do
+  path' <- getPath
+  return path'
+  
 -- | Returns the current page name (derived from the path).
 getPage :: GititServerPart String
 getPage = do
@@ -281,6 +295,11 @@ isSourceCode path' =
       ext = takeExtension path'
   in  not (null langs || ext == ".svg" || ext == ".eps")
                          -- allow svg or eps to be served as image
+
+isOrgFile :: String -> Bool
+isOrgFile path' =
+  let ext = takeExtension path'
+  in  (not (null ext))  && ( ext == ".org")
 
 -- | Returns encoded URL path for the page with the given name, relative to
 -- the wiki base.

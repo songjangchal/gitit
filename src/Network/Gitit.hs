@@ -128,6 +128,8 @@ import System.FilePath ((</>))
 import System.Directory (getTemporaryDirectory)
 import Safe
 
+import System.FilePath
+
 -- | Happstack handler for a gitit wiki.
 wiki :: Config -> ServerPart Response
 wiki conf = do
@@ -203,6 +205,7 @@ wikiHandlers =
   , method POST >> guardCommand "cancel" >> showPage
   , method POST >> guardCommand "update" >>
       authenticate ForModify (unlessNoEdit updatePage showPage)
+  , guardPath isOrgFile >> getPageStr  >>= \b -> movedPermanently (dropExtension b) (toResponse ())      
   , showPage
   , guardPath isSourceCode >> method GET >> showHighlightedSource
   , handleAny

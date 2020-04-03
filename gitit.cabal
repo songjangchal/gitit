@@ -181,7 +181,7 @@ Library
   ghc-options:       -Wall -fno-warn-unused-do-bind
   ghc-prof-options:  -fprof-auto-exported
 
-Executable           gitit
+Executable           Gitit
   hs-source-dirs:    .
   main-is:           gitit.hs
   build-depends:     base >=3 && < 5,
